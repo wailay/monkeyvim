@@ -1,4 +1,4 @@
-export type VimMode = "c" | "d" | "y" | "motion" | "find" | "random";
+export type VimMode = "c" | "d" | "y" | "motion" | "find" | "refactor" | "format" | "fix" | "random";
 
 export interface Challenge {
   id: string;

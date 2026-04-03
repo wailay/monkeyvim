@@ -4,6 +4,9 @@ import { deleteSet } from "./delete";
 import { yankSet } from "./yank";
 import { motionSet } from "./motion";
 import { findSet } from "./find";
+import { refactorSet } from "./refactor";
+import { formatSet } from "./format";
+import { fixSet } from "./fix";
 
 export const challengeSets: ChallengeSet[] = [
   changeSet,
@@ -11,6 +14,9 @@ export const challengeSets: ChallengeSet[] = [
   yankSet,
   motionSet,
   findSet,
+  refactorSet,
+  formatSet,
+  fixSet,
 ];
 
 export function getChallengeSet(mode: VimMode): ChallengeSet | null {
