@@ -81,6 +81,15 @@ Challenges live in `lib/challenges/`. Each challenge defines:
 
 Add new challenges to the appropriate mode file and they'll automatically appear in the app.
 
+## TODO
+
+- [ ] Show session summary screen after completing all challenges in a mode
+- [ ] Implement better scoring system
+- [ ] Persist scores between sessions (local storage or database)
+- [ ] Add more challenges across all modes
+- [ ] Add compound challenges — multi-step, complex editing tasks beyond single-mode drills
+- [ ] Timer system
+
 ## License
 
 MIT
