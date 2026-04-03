@@ -3,6 +3,7 @@
 import { useRef, useState, useEffect, useCallback, useImperativeHandle, forwardRef } from "react";
 import { Compartment, EditorState } from "@codemirror/state";
 import { EditorView, ViewUpdate, lineNumbers } from "@codemirror/view";
+import { history } from "@codemirror/commands";
 import { vim, getCM, Vim } from "@replit/codemirror-vim";
 import { useThemeContext } from "./ThemeProvider";
 import { buildCodeMirrorTheme } from "@/lib/themes";
@@ -136,6 +137,7 @@ export const VimEditor = forwardRef<VimEditorHandle, VimEditorProps>(
         doc: initialContent,
         selection: { anchor: cursorPos },
         extensions: [
+          history(),
           vim({ status: true }),
           lineNumbers(),
           themeCompartment.current.of(cmTheme),
