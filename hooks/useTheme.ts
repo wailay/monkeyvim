@@ -17,6 +17,12 @@ interface StoreState {
   fontSize: FontSize;
 }
 
+/** Stable reference for SSR — getServerSnapshot must not return a new object each call. */
+const SERVER_SNAPSHOT: StoreState = {
+  theme: defaultTheme,
+  fontSize: "medium",
+};
+
 let current: StoreState = { theme: defaultTheme, fontSize: "medium" };
 const listeners = new Set<() => void>();
 
@@ -30,7 +36,7 @@ function getSnapshot(): StoreState {
 }
 
 function getServerSnapshot(): StoreState {
-  return { theme: defaultTheme, fontSize: "medium" };
+  return SERVER_SNAPSHOT;
 }
 
 function applyFontSize(size: FontSize) {

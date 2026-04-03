@@ -56,7 +56,9 @@ export const VimEditor = forwardRef<VimEditorHandle, VimEditorProps>(
       function handleFocusOut() {
         // Delay to allow focus to move to another element within the container (e.g. : input)
         timeout = setTimeout(() => {
-          if (!container.contains(document.activeElement)) {
+          const root = containerRef.current;
+          if (!root) return;
+          if (!root.contains(document.activeElement)) {
             setFocused(false);
             // Actually blur the editor so it stops receiving keyboard input
             viewRef.current?.contentDOM.blur();
