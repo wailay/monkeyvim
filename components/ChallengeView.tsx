@@ -25,7 +25,11 @@ function statusBorderClass(status: ChallengeStatus): string {
   }
 }
 
-export function ChallengeView({ mode, showHint, onToggleHint }: ChallengeViewProps) {
+export function ChallengeView({
+  mode,
+  showHint,
+  onToggleHint,
+}: ChallengeViewProps) {
   const editorRef = useRef<VimEditorHandle>(null);
   const resetButtonRef = useRef<HTMLButtonElement>(null);
   const [tabPressed, setTabPressed] = useState(false);
@@ -129,7 +133,11 @@ export function ChallengeView({ mode, showHint, onToggleHint }: ChallengeViewPro
         <Tooltip text="How efficiently you get there">
           <div className="flex items-center gap-2 text-mv-text-muted">
             <span className="text-mv-text-faint">score</span>
-            <span className={averageScore > 0 ? "text-mv-accent" : "text-mv-text-muted"}>
+            <span
+              className={
+                averageScore > 0 ? "text-mv-accent" : "text-mv-text-muted"
+              }
+            >
               {averageScore}
             </span>
           </div>
@@ -148,12 +156,10 @@ export function ChallengeView({ mode, showHint, onToggleHint }: ChallengeViewPro
         >
           {/* Prompt */}
           <div className="flex items-center justify-center gap-3">
-            <p className="text-mv-text font-mono text-lg">
-              {current.prompt}
-            </p>
+            <p className="text-mv-text font-mono text-lg">{current.prompt}</p>
             <button
               onClick={onToggleHint}
-              className={`shrink-0 w-6 h-6 flex items-center justify-center rounded-full text-sm font-mono transition-colors duration-150 cursor-pointer ${
+              className={`shrink-0 w-4 h-4 flex items-center justify-center rounded-full text-sm font-mono transition-colors duration-150 cursor-pointer ${
                 showHint
                   ? "bg-mv-accent text-mv-bg"
                   : "text-mv-text-faint hover:text-mv-accent hover:bg-mv-surface-hover"
@@ -214,7 +220,9 @@ export function ChallengeView({ mode, showHint, onToggleHint }: ChallengeViewPro
           <RotateCcw size={16} />
         </button>
         <span className="absolute right-0 text-[11px] font-mono text-mv-text-faint">
-          tips: <span className="text-mv-text-muted">:q</span> skip <span className="text-mv-text-faint mx-1">|</span> <span className="text-mv-text-muted">&lt;Esc&gt;</span> to validate
+          tips: <span className="text-mv-text-muted">:q</span> skip{" "}
+          <span className="text-mv-text-faint mx-1">|</span>{" "}
+          <span className="text-mv-text-muted">&lt;Esc&gt;</span> to validate
         </span>
       </div>
     </div>

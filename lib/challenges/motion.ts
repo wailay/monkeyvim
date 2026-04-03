@@ -133,7 +133,7 @@ export const motionSet: ChallengeSet = {
       initialContent: "alpha beta gamma delta",
       cursorPos: 17,
       expectedContent: "alpha beta gamma delta",
-      expectedCursorPos: 6,
+      expectedCursorPos: 0,
       expectedCommand: "3b",
       tags: ["motion", "count", "back"],
       difficulty: 2,
