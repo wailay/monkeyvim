@@ -27,6 +27,8 @@ export interface CommandAttempt {
   correct: boolean;
   timeMs: number;
   timestamp: number;
+  keystrokeCount: number;
+  score: number;
 }
 
 export interface SessionStats {

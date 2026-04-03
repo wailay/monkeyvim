@@ -6,6 +6,7 @@ import { RotateCcw, CircleHelp } from "lucide-react";
 import { VimEditor, type VimEditorHandle } from "./VimEditor";
 import { useChallenge, type ChallengeStatus } from "@/hooks/useChallenge";
 import type { VimMode } from "@/lib/types";
+import { Tooltip } from "./Tooltip";
 
 interface ChallengeViewProps {
   mode: VimMode;
@@ -32,8 +33,10 @@ export function ChallengeView({ mode, showHint, onToggleHint }: ChallengeViewPro
     current,
     status,
     validate,
+    handleKeystroke,
     streak,
     accuracy,
+    averageScore,
     skip,
     reset,
     challengeKey,
@@ -100,25 +103,37 @@ export function ChallengeView({ mode, showHint, onToggleHint }: ChallengeViewPro
     <div className="flex flex-col items-center gap-6 w-full max-w-3xl mx-auto">
       {/* Stats row */}
       <div className="flex items-center gap-8 font-mono text-sm">
-        <div className="flex items-center gap-2 text-mv-text-muted">
-          <span className="text-mv-text-faint">streak</span>
-          <AnimatePresence mode="wait">
-            <motion.span
-              key={streak}
-              initial={{ y: -8, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              exit={{ y: 8, opacity: 0 }}
-              transition={{ duration: 0.12 }}
-              className={streak > 0 ? "text-mv-accent" : "text-mv-text-muted"}
-            >
-              {streak}
-            </motion.span>
-          </AnimatePresence>
-        </div>
-        <div className="flex items-center gap-2 text-mv-text-muted">
-          <span className="text-mv-text-faint">acc</span>
-          <span>{accuracy}%</span>
-        </div>
+        <Tooltip text="Consecutive correct answers in a row">
+          <div className="flex items-center gap-2 text-mv-text-muted">
+            <span className="text-mv-text-faint">streak</span>
+            <AnimatePresence mode="wait">
+              <motion.span
+                key={streak}
+                initial={{ y: -8, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                exit={{ y: 8, opacity: 0 }}
+                transition={{ duration: 0.12 }}
+                className={streak > 0 ? "text-mv-accent" : "text-mv-text-muted"}
+              >
+                {streak}
+              </motion.span>
+            </AnimatePresence>
+          </div>
+        </Tooltip>
+        <Tooltip text="How often you get it right">
+          <div className="flex items-center gap-2 text-mv-text-muted">
+            <span className="text-mv-text-faint">acc</span>
+            <span>{accuracy}%</span>
+          </div>
+        </Tooltip>
+        <Tooltip text="How efficiently you get there">
+          <div className="flex items-center gap-2 text-mv-text-muted">
+            <span className="text-mv-text-faint">score</span>
+            <span className={averageScore > 0 ? "text-mv-accent" : "text-mv-text-muted"}>
+              {averageScore}
+            </span>
+          </div>
+        </Tooltip>
       </div>
 
       {/* Challenge area */}
@@ -176,6 +191,7 @@ export function ChallengeView({ mode, showHint, onToggleHint }: ChallengeViewPro
               initialContent={current.initialContent}
               cursorPos={current.cursorPos}
               onStateChange={validate}
+              onKeystroke={handleKeystroke}
               onSkip={skip}
               challengeKey={challengeKey}
             />

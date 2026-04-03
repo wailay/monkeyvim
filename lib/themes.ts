@@ -14,7 +14,7 @@ export const themes: Theme[] = [
     slug: "dracula",
     bg: "#282a36",
     accent: "#bd93f9",
-    secondary: "#f8f8f2",
+    secondary: "#c0c8e0",
   },
   {
     name: "Nord",

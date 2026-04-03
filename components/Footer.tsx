@@ -1,8 +1,10 @@
 "use client";
 
+import { Code, Heart } from "lucide-react";
+
 export function Footer() {
   return (
-    <footer className="flex flex-col items-center gap-4 py-4 px-6 mt-auto">
+    <footer className="flex flex-col items-center gap-4 py-4 px-24 mt-auto">
       {/* Shortcuts */}
       <div className="flex items-center gap-6 font-mono text-xs text-mv-text-faint">
         <span>
@@ -40,9 +42,24 @@ export function Footer() {
       {/* Bottom bar */}
       <div className="flex items-center justify-between w-full text-xs font-mono text-mv-text-faint">
         <div className="flex items-center gap-4">
-          <span>contact</span>
-          <span>github</span>
-          <span>discord</span>
+          <a
+            href="https://github.com/wailay/monkeyvim"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-1 hover:text-mv-accent transition-colors duration-150"
+          >
+            <Code size={12} />
+            github
+          </a>
+          <a
+            href="https://ko-fi.com/monkeyvim"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-1 hover:text-mv-accent transition-colors duration-150"
+          >
+            <Heart size={12} />
+            support
+          </a>
         </div>
         <div className="flex items-center gap-2">
           <span className="text-mv-accent">monkeyvim</span>

@@ -16,8 +16,13 @@ export function useChallenge(mode: VimMode) {
   const [streak, setStreak] = useState(0);
   const timer = useTimer();
   const hasStartedRef = useRef(false);
+  const keystrokeCountRef = useRef(0);
 
   const current = challenges[currentIndex % challenges.length] as Challenge | undefined;
+
+  const handleKeystroke = useCallback(() => {
+    keystrokeCountRef.current++;
+  }, []);
 
   const startTimer = useCallback(() => {
     if (!hasStartedRef.current) {
@@ -44,6 +49,9 @@ export function useChallenge(mode: VimMode) {
 
       if (correct) {
         const timeMs = timer.stop();
+        const keystrokes = keystrokeCountRef.current;
+        const ideal = current.expectedCommand.length;
+        const score = keystrokes <= ideal ? 100 : Math.max(0, Math.round(100 * ideal / keystrokes));
         setStatus("correct");
         setStreak((s) => s + 1);
         setAttempts((prev) => [
@@ -53,6 +61,8 @@ export function useChallenge(mode: VimMode) {
             correct: true,
             timeMs,
             timestamp: Date.now(),
+            keystrokeCount: keystrokes,
+            score,
           },
         ]);
 
@@ -61,6 +71,7 @@ export function useChallenge(mode: VimMode) {
           setCurrentIndex((i) => i + 1);
           setStatus("active");
           hasStartedRef.current = false;
+          keystrokeCountRef.current = 0;
           timer.reset();
         }, 600);
       } else {
@@ -70,6 +81,7 @@ export function useChallenge(mode: VimMode) {
 
         if (contentChanged || cursorChanged) {
           const timeMs = timer.stop();
+          const keystrokes = keystrokeCountRef.current;
           setStatus("incorrect");
           setStreak(0);
           setAttempts((prev) => [
@@ -79,10 +91,12 @@ export function useChallenge(mode: VimMode) {
               correct: false,
               timeMs,
               timestamp: Date.now(),
+              keystrokeCount: keystrokes,
+              score: 0,
             },
           ]);
 
-          // Reset after a brief delay
+          // Reset editor but keep keystroke count accumulating
           setTimeout(() => {
             setStatus("active");
             hasStartedRef.current = false;
@@ -98,6 +112,7 @@ export function useChallenge(mode: VimMode) {
     setCurrentIndex((i) => i + 1);
     setStatus("active");
     hasStartedRef.current = false;
+    keystrokeCountRef.current = 0;
     timer.reset();
   }, [timer]);
 
@@ -105,6 +120,7 @@ export function useChallenge(mode: VimMode) {
     setResetCount((c) => c + 1);
     setStatus("active");
     hasStartedRef.current = false;
+    keystrokeCountRef.current = 0;
     timer.reset();
   }, [timer]);
 
@@ -116,13 +132,19 @@ export function useChallenge(mode: VimMode) {
         attempts.filter((a) => a.correct).reduce((sum, a) => sum + a.timeMs, 0) / correctAttempts
       )
     : 0;
+  const correctAttemptsList = attempts.filter((a) => a.correct);
+  const averageScore = correctAttemptsList.length > 0
+    ? Math.round(correctAttemptsList.reduce((sum, a) => sum + a.score, 0) / correctAttemptsList.length)
+    : 0;
 
   return {
     current,
     status,
     validate,
+    handleKeystroke,
     streak,
     accuracy,
+    averageScore,
     avgTime,
     totalAttempts,
     correctAttempts,

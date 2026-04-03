@@ -1,36 +1,86 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# monkeyvim
 
-## Getting Started
+Practice vim like a monkey
 
-First, run the development server:
+## Practice Modes
+
+| Mode       | What you practice                                       |
+| ---------- | ------------------------------------------------------- |
+| **motion** | Navigating with `w`, `b`, `e`, `gg`, `G`, `%`, and more |
+| **find**   | Character search with `f`, `F`, `t`, `T`                |
+| **delete** | The `d` operator combined with motions and text objects |
+| **change** | The `c` operator for replacing text                     |
+| **yank**   | Copying text with `y` and pasting with `p`              |
+| **random** | A mix of all the above                                  |
+
+Each challenge gives you a starting buffer, a goal state, and optionally a hint. Your edits are validated in real time against the expected result.
+
+## Features
+
+- Real vim keybindings via CodeMirror + [@replit/codemirror-vim](https://github.com/nicknisi/codemirror-vim)
+- Multiple difficulty levels per mode
+- Session tracking with time, keystrokes, and score
+- Hint system for when you're stuck
+- Light and dark themes with multiple color schemes
+- Adjustable font size
+
+## Tech Stack
+
+- [Next.js 16](https://nextjs.org/) with App Router
+- [React 19](https://react.dev/) with React Compiler
+- [CodeMirror 6](https://codemirror.net/) for the editor
+- [Tailwind CSS 4](https://tailwindcss.com/) for styling
+- [Framer Motion](https://motion.dev/) for animations
+- [Lucide](https://lucide.dev/) for icons
+- TypeScript
+
+## Development
+
+### Prerequisites
+
+- [Node.js](https://nodejs.org/) (v18+)
+- [Bun](https://bun.sh/) (recommended) or npm
+
+### Getting Started
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+# Clone the repo
+git clone https://github.com/your-username/monkeyvim.git
+cd monkeyvim
+
+# Install dependencies
+bun install
+
+# Start the dev server
+bun run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000) to start practicing.           |
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Project Structure
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```text
+app/                  Next.js app router pages and layout
+components/           React components (editor, challenges, selectors)
+hooks/                Custom hooks (challenge state, theme, timer)
+lib/
+  challenges/         Challenge definitions organized by mode
+  types.ts            TypeScript interfaces
+  themes.ts           Theme definitions
+```
 
-## Learn More
+## Adding Challenges
 
-To learn more about Next.js, take a look at the following resources:
+Challenges live in `lib/challenges/`. Each challenge defines:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- `startContent` — the initial buffer text
+- `expectedContent` — what the buffer should look like after the correct edit
+- `cursorStart` / `cursorEnd` — starting and expected cursor positions
+- `hint` — an optional hint string
+- `difficulty` — a level from 1 to 3
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Add new challenges to the appropriate mode file and they'll automatically appear in the app.
 
-## Deploy on Vercel
+## License
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+MIT

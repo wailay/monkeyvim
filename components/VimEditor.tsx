@@ -11,6 +11,7 @@ interface VimEditorProps {
   initialContent: string;
   cursorPos: number;
   onStateChange?: (content: string, cursorPos: number) => void;
+  onKeystroke?: () => void;
   onSkip?: () => void;
   challengeKey: string;
 }
@@ -20,7 +21,7 @@ export interface VimEditorHandle {
 }
 
 export const VimEditor = forwardRef<VimEditorHandle, VimEditorProps>(
-  function VimEditor({ initialContent, cursorPos, onStateChange, onSkip, challengeKey }, ref) {
+  function VimEditor({ initialContent, cursorPos, onStateChange, onKeystroke, onSkip, challengeKey }, ref) {
     const containerRef = useRef<HTMLDivElement>(null);
     const viewRef = useRef<EditorView | null>(null);
     const themeCompartment = useRef(new Compartment());
@@ -32,6 +33,8 @@ export const VimEditor = forwardRef<VimEditorHandle, VimEditorProps>(
 
     const onStateChangeRef = useRef(onStateChange);
     onStateChangeRef.current = onStateChange;
+    const onKeystrokeRef = useRef(onKeystroke);
+    onKeystrokeRef.current = onKeystroke;
     const onSkipRef = useRef(onSkip);
     onSkipRef.current = onSkip;
 
@@ -162,11 +165,18 @@ export const VimEditor = forwardRef<VimEditorHandle, VimEditorProps>(
       prevContentRef.current = initialContent;
       prevCursorRef.current = cursorPos;
 
+      const handleKeyDown = (e: KeyboardEvent) => {
+        if (e.key === "Escape") return;
+        onKeystrokeRef.current?.();
+      };
+      view.contentDOM.addEventListener("keydown", handleKeyDown);
+
       requestAnimationFrame(() => {
         view.focus();
       });
 
       return () => {
+        view.contentDOM.removeEventListener("keydown", handleKeyDown);
         view.destroy();
       };
       // eslint-disable-next-line react-hooks/exhaustive-deps
