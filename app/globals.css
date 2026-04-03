@@ -1,0 +1,52 @@
+@import "tailwindcss";
+
+:root {
+  /* Base 3 colors — set by ThemeProvider JS */
+  --mv-bg: #333139;
+  --mv-accent: #f44c7f;
+  --mv-secondary: #e8caa4;
+
+  /* Derived: text */
+  --mv-text: color-mix(in oklch, var(--mv-secondary), white 20%);
+  --mv-text-muted: color-mix(in oklch, var(--mv-secondary), var(--mv-bg) 40%);
+  --mv-text-faint: color-mix(in oklch, var(--mv-bg), var(--mv-secondary) 20%);
+
+  /* Derived: surfaces */
+  --mv-surface: color-mix(in oklch, var(--mv-bg), white 5%);
+  --mv-surface-hover: color-mix(in oklch, var(--mv-bg), white 10%);
+  --mv-surface-active: color-mix(in oklch, var(--mv-bg), white 15%);
+
+  /* Derived: borders */
+  --mv-border: color-mix(in oklch, var(--mv-bg), var(--mv-secondary) 15%);
+
+  /* Cursor */
+  --mv-cursor: var(--mv-accent);
+
+  /* Feedback */
+  --mv-correct: color-mix(in oklch, var(--mv-accent), lime 40%);
+  --mv-incorrect: color-mix(in oklch, var(--mv-accent), red 60%);
+}
+
+@theme inline {
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-roboto-mono);
+  --color-mv-bg: var(--mv-bg);
+  --color-mv-accent: var(--mv-accent);
+  --color-mv-secondary: var(--mv-secondary);
+  --color-mv-text: var(--mv-text);
+  --color-mv-text-muted: var(--mv-text-muted);
+  --color-mv-text-faint: var(--mv-text-faint);
+  --color-mv-surface: var(--mv-surface);
+  --color-mv-surface-hover: var(--mv-surface-hover);
+  --color-mv-surface-active: var(--mv-surface-active);
+  --color-mv-border: var(--mv-border);
+  --color-mv-cursor: var(--mv-cursor);
+  --color-mv-correct: var(--mv-correct);
+  --color-mv-incorrect: var(--mv-incorrect);
+}
+
+body {
+  background: var(--mv-bg);
+  color: var(--mv-text);
+  font-family: var(--font-roboto-mono), var(--font-geist-sans), system-ui, sans-serif;
+}
