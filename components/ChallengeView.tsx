@@ -1,10 +1,11 @@
 "use client";
 
-import { useRef, useState, useEffect } from "react";
+import { useRef, useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { RotateCcw, CircleHelp } from "lucide-react";
 import { VimEditor, type VimEditorHandle } from "./VimEditor";
 import { useChallenge, type ChallengeStatus } from "@/hooks/useChallenge";
+import { useCountdown } from "@/hooks/useCountdown";
 import type { VimMode } from "@/lib/types";
 import { Tooltip } from "./Tooltip";
 
@@ -12,23 +13,20 @@ interface ChallengeViewProps {
   mode: VimMode;
   showHint: boolean;
   onToggleHint: () => void;
+  timerEnabled: boolean;
+  timerDuration: number;
 }
 
 function statusBorderClass(status: ChallengeStatus): string {
-  switch (status) {
-    case "correct":
-      return "ring-2 ring-mv-correct";
-    case "incorrect":
-      return "ring-2 ring-mv-incorrect";
-    default:
-      return "";
-  }
+  return status === "correct" ? "ring-2 ring-mv-correct" : "";
 }
 
 export function ChallengeView({
   mode,
   showHint,
   onToggleHint,
+  timerEnabled,
+  timerDuration,
 }: ChallengeViewProps) {
   const editorRef = useRef<VimEditorHandle>(null);
   const resetButtonRef = useRef<HTMLButtonElement>(null);
@@ -39,22 +37,42 @@ export function ChallengeView({
     validate,
     handleKeystroke,
     streak,
-    accuracy,
     averageScore,
     skip,
+    timeout: onTimeout,
     reset,
     challengeKey,
   } = useChallenge(mode);
 
+  const countdown = useCountdown({
+    duration: timerDuration,
+    onExpire: onTimeout,
+  });
+
+  // Start countdown on first keystroke when timer is enabled
+  const handleKeystrokeWithTimer = useCallback(() => {
+    handleKeystroke();
+    if (timerEnabled && !countdown.running) {
+      countdown.start();
+    }
+  }, [handleKeystroke, timerEnabled, countdown]);
+
+  // Reset countdown when challenge advances or is answered correctly
+  useEffect(() => {
+    countdown.reset();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [challengeKey, status]);
+
   // Tab + Enter to reset challenge
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
-      const isInEditor = (e.target as HTMLElement)?.closest?.(".cm-editor");
+      const target = e.target as HTMLElement;
+      const isInEditor = target?.closest?.(".cm-editor");
+      const isInInput = target?.tagName === "INPUT" || target?.tagName === "TEXTAREA";
 
       if (e.key === "Tab") {
         e.preventDefault();
         setTabPressed(true);
-        // Move focus to the reset button so editor releases keyboard
         resetButtonRef.current?.focus();
         return;
       }
@@ -83,11 +101,9 @@ export function ChallengeView({
         return;
       }
 
-      // Any other key resets tab state
       if (e.key !== "Tab") {
         setTabPressed(false);
-        // Refocus editor, but prevent the keystroke from leaking into it
-        if (!isInEditor) {
+        if (!isInEditor && !isInInput) {
           e.preventDefault();
           e.stopPropagation();
           requestAnimationFrame(() => editorRef.current?.focus());
@@ -102,6 +118,8 @@ export function ChallengeView({
   }, [tabPressed, reset, skip, onToggleHint]);
 
   if (!current) return null;
+
+  const remainingSeconds = Math.ceil(countdown.remaining);
 
   return (
     <div className="flex flex-col items-center gap-6 w-full max-w-3xl mx-auto">
@@ -124,12 +142,6 @@ export function ChallengeView({
             </AnimatePresence>
           </div>
         </Tooltip>
-        <Tooltip text="How often you get it right">
-          <div className="flex items-center gap-2 text-mv-text-muted">
-            <span className="text-mv-text-faint">acc</span>
-            <span>{accuracy}%</span>
-          </div>
-        </Tooltip>
         <Tooltip text="How efficiently you get there">
           <div className="flex items-center gap-2 text-mv-text-muted">
             <span className="text-mv-text-faint">score</span>
@@ -142,6 +154,14 @@ export function ChallengeView({
             </span>
           </div>
         </Tooltip>
+        {timerEnabled && (
+          <div className="flex items-center gap-2 text-mv-text-muted">
+            <span className="text-mv-text-faint">time</span>
+            <span className={remainingSeconds <= 5 ? "text-mv-accent" : "text-mv-text-muted"}>
+              {remainingSeconds}s
+            </span>
+          </div>
+        )}
       </div>
 
       {/* Challenge area */}
@@ -197,7 +217,7 @@ export function ChallengeView({
               initialContent={current.initialContent}
               cursorPos={current.cursorPos}
               onStateChange={validate}
-              onKeystroke={handleKeystroke}
+              onKeystroke={handleKeystrokeWithTimer}
               onSkip={skip}
               challengeKey={challengeKey}
             />
@@ -220,9 +240,7 @@ export function ChallengeView({
           <RotateCcw size={16} />
         </button>
         <span className="absolute right-0 text-[11px] font-mono text-mv-text-faint">
-          tips: <span className="text-mv-text-muted">:q</span> skip{" "}
-          <span className="text-mv-text-faint mx-1">|</span>{" "}
-          <span className="text-mv-text-muted">&lt;Esc&gt;</span> to validate
+          tips: <span className="text-mv-text-muted">:q</span> skip
         </span>
       </div>
     </div>

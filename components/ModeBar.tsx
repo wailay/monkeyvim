@@ -1,10 +1,15 @@
 "use client";
 
 import type { VimMode } from "@/lib/types";
+import { TimerBar } from "./TimerBar";
 
 interface ModeBarProps {
   selectedMode: VimMode;
   onSelectMode: (mode: VimMode) => void;
+  timerEnabled: boolean;
+  timerDuration: number;
+  onTimerToggle: () => void;
+  onTimerDurationChange: (seconds: number) => void;
 }
 
 const modes: { mode: VimMode; key: string; label: string }[] = [
@@ -16,9 +21,16 @@ const modes: { mode: VimMode; key: string; label: string }[] = [
   { mode: "random", key: "?", label: "random" },
 ];
 
-export function ModeBar({ selectedMode, onSelectMode }: ModeBarProps) {
+export function ModeBar({
+  selectedMode,
+  onSelectMode,
+  timerEnabled,
+  timerDuration,
+  onTimerToggle,
+  onTimerDurationChange,
+}: ModeBarProps) {
   return (
-    <div className="flex items-center justify-center py-3">
+    <div className="flex items-center justify-center gap-4 py-3 px-6">
       <div className="flex items-center gap-2 bg-mv-surface rounded-lg px-2 py-1.5">
         {modes.map((m) => (
           <button
@@ -37,6 +49,13 @@ export function ModeBar({ selectedMode, onSelectMode }: ModeBarProps) {
           </button>
         ))}
       </div>
+
+      <TimerBar
+        enabled={timerEnabled}
+        duration={timerDuration}
+        onToggle={onTimerToggle}
+        onDurationChange={onTimerDurationChange}
+      />
     </div>
   );
 }

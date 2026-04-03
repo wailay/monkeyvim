@@ -4,7 +4,7 @@ import { useRef, useState, useEffect, useCallback, useImperativeHandle, forwardR
 import { Compartment, EditorState } from "@codemirror/state";
 import { EditorView, ViewUpdate, lineNumbers } from "@codemirror/view";
 import { history } from "@codemirror/commands";
-import { vim, getCM, Vim } from "@replit/codemirror-vim";
+import { vim, Vim } from "@replit/codemirror-vim";
 import { useThemeContext } from "./ThemeProvider";
 import { buildCodeMirrorTheme } from "@/lib/themes";
 
@@ -27,7 +27,6 @@ export const VimEditor = forwardRef<VimEditorHandle, VimEditorProps>(
     const viewRef = useRef<EditorView | null>(null);
     const themeCompartment = useRef(new Compartment());
     const { theme } = useThemeContext();
-    const prevInsertModeRef = useRef(false);
     const prevContentRef = useRef(initialContent);
     const prevCursorRef = useRef(cursorPos);
     const [focused, setFocused] = useState(true);
@@ -81,36 +80,17 @@ export const VimEditor = forwardRef<VimEditorHandle, VimEditorProps>(
 
     const handleUpdate = useCallback((update: ViewUpdate) => {
       const view = update.view;
-      const cm = getCM(view);
-      if (!cm) return;
-
-      const vimState = cm.state.vim;
-      const isInsertMode = vimState?.insertMode ?? false;
-      const wasInsertMode = prevInsertModeRef.current;
-
       const currentContent = view.state.doc.toString();
       const currentCursor = view.state.selection.main.head;
 
-      if (wasInsertMode && !isInsertMode) {
+      const contentChanged = currentContent !== prevContentRef.current;
+      const cursorChanged = currentCursor !== prevCursorRef.current;
+
+      if (contentChanged || cursorChanged) {
+        prevContentRef.current = currentContent;
+        prevCursorRef.current = currentCursor;
         onStateChangeRef.current?.(currentContent, currentCursor);
       }
-
-      if (!isInsertMode && !wasInsertMode) {
-        const contentChanged = currentContent !== prevContentRef.current;
-        const cursorChanged = currentCursor !== prevCursorRef.current;
-
-        if (contentChanged || cursorChanged) {
-          requestAnimationFrame(() => {
-            const latestContent = view.state.doc.toString();
-            const latestCursor = view.state.selection.main.head;
-            onStateChangeRef.current?.(latestContent, latestCursor);
-          });
-        }
-      }
-
-      prevInsertModeRef.current = isInsertMode;
-      prevContentRef.current = currentContent;
-      prevCursorRef.current = currentCursor;
     }, []);
 
     useEffect(() => {
@@ -163,7 +143,6 @@ export const VimEditor = forwardRef<VimEditorHandle, VimEditorProps>(
 
       viewRef.current = view;
       setFocused(true);
-      prevInsertModeRef.current = false;
       prevContentRef.current = initialContent;
       prevCursorRef.current = cursorPos;
 
