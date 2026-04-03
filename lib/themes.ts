@@ -39,7 +39,7 @@ export const themes: Theme[] = [
   },
 ];
 
-export const defaultTheme = themes[0];
+export const defaultTheme = themes[1];
 
 export function getThemeBySlug(slug: string): Theme {
   return themes.find((t) => t.slug === slug) ?? defaultTheme;
@@ -129,6 +129,6 @@ export function buildCodeMirrorTheme(theme: Theme) {
         border: "none",
       },
     },
-    { dark: true }
+    { dark: true },
   );
 }

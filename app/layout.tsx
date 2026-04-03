@@ -14,8 +14,34 @@ const robotoMono = Roboto_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "monkeyvim",
-  description: "Learn vim commands through practice",
+  title: "monkeyvim — learn vim by doing",
+  description:
+    "Practice vim motions, commands, and text objects in an interactive editor. Build muscle memory for vim keybindings at your own pace.",
+  keywords: [
+    "vim",
+    "vim practice",
+    "vim trainer",
+    "vim motions",
+    "learn vim",
+    "vim keybindings",
+    "vim commands",
+    "neovim",
+  ],
+  metadataBase: new URL("https://monkeyvim.com"),
+  openGraph: {
+    title: "monkeyvim — learn vim by doing",
+    description:
+      "Practice vim motions, commands, and text objects in an interactive editor.",
+    siteName: "monkeyvim",
+    url: "https://monkeyvim.com",
+    type: "website",
+  },
+  twitter: {
+    card: "summary",
+    title: "monkeyvim — learn vim by doing",
+    description:
+      "Practice vim motions, commands, and text objects in an interactive editor.",
+  },
 };
 
 export default function RootLayout({

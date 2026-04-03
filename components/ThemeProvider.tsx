@@ -14,7 +14,7 @@ interface ThemeContextValue {
 
 const ThemeContext = createContext<ThemeContextValue>({
   theme: defaultTheme,
-  fontSize: "medium",
+  fontSize: "small",
   setTheme: () => {},
   setFontSize: () => {},
 });
