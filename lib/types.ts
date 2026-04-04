@@ -1,4 +1,13 @@
-export type VimMode = "c" | "d" | "y" | "motion" | "find" | "refactor" | "format" | "fix" | "random";
+export type VimMode =
+  | "c"
+  | "d"
+  | "y"
+  | "motion"
+  | "find"
+  | "refactor"
+  | "format"
+  | "fix"
+  | "random";
 
 export interface Challenge {
   id: string;
@@ -51,7 +60,7 @@ export type FontSize = "small" | "medium" | "large";
 
 // Root font-size on <html> — all rem-based sizes scale proportionally
 export const fontSizeValues: Record<FontSize, string> = {
-  small: "18px",
-  medium: "20px",
-  large: "24px",
+  small: "16px",
+  medium: "18px",
+  large: "20px",
 };
