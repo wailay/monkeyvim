@@ -54,8 +54,6 @@ export interface Theme {
   secondary: string;
 }
 
-export type AppView = "home" | "practice" | "summary";
-
 export type FontSize = "small" | "medium" | "large";
 
 // Root font-size on <html> — all rem-based sizes scale proportionally
