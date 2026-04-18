@@ -50,3 +50,13 @@ body {
   color: var(--mv-text);
   font-family: var(--font-roboto-mono), var(--font-geist-sans), system-ui, sans-serif;
 }
+
+/* Shown only on touch-only devices — the app requires a physical keyboard. */
+.mobile-keyboard-notice {
+  display: none;
+}
+@media (hover: none) and (pointer: coarse) {
+  .mobile-keyboard-notice {
+    display: block;
+  }
+}

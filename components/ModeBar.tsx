@@ -35,20 +35,20 @@ export function ModeBar({
   onTimerDurationChange,
 }: ModeBarProps) {
   return (
-    <div className="flex items-center justify-center gap-4 py-3 px-6">
-      <div className="flex items-center gap-2 bg-mv-surface rounded-lg px-2 py-1.5">
+    <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-4 py-3 px-4 sm:px-6">
+      <div className="flex items-center gap-1 sm:gap-2 bg-mv-surface rounded-lg px-2 py-1.5 max-w-full overflow-x-auto">
         {modes.map((m, i) => {
           const prev = modes[i - 1];
           const showDivider = prev && prev.category !== m.category;
 
           return (
-            <div key={m.mode} className="flex items-center gap-2">
+            <div key={m.mode} className="flex items-center gap-1 sm:gap-2 shrink-0">
               {showDivider && (
                 <span className="text-mv-text-faint text-sm select-none">|</span>
               )}
               <button
                 onClick={() => onSelectMode(m.mode)}
-                className={`flex items-center gap-2 px-3.5 py-1.5 rounded-md font-mono text-sm transition-colors duration-150 cursor-pointer ${
+                className={`flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3.5 py-1.5 rounded-md font-mono text-xs sm:text-sm whitespace-nowrap transition-colors duration-150 cursor-pointer ${
                   selectedMode === m.mode
                     ? "bg-mv-accent text-mv-bg font-medium"
                     : "text-mv-text-muted hover:text-mv-text hover:bg-mv-surface-hover"

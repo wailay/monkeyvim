@@ -122,9 +122,9 @@ export function ChallengeView({
   const remainingSeconds = Math.ceil(countdown.remaining);
 
   return (
-    <div className="flex flex-col items-center gap-6 w-full max-w-3xl mx-auto">
+    <div className="flex flex-col items-center gap-4 sm:gap-6 w-full max-w-3xl mx-auto">
       {/* Stats row */}
-      <div className="flex items-center gap-8 font-mono text-sm">
+      <div className="flex items-center gap-6 sm:gap-8 font-mono text-sm">
         <Tooltip text="Consecutive correct answers in a row">
           <div className="flex items-center gap-2 text-mv-text-muted">
             <span className="text-mv-text-faint">streak</span>
@@ -175,8 +175,8 @@ export function ChallengeView({
           className="flex flex-col gap-4 w-full"
         >
           {/* Prompt */}
-          <div className="flex items-center justify-center gap-3">
-            <p className="text-mv-text font-mono text-lg">{current.prompt}</p>
+          <div className="flex items-center justify-center gap-3 text-center">
+            <p className="text-mv-text font-mono text-base sm:text-lg">{current.prompt}</p>
             <button
               onClick={onToggleHint}
               className={`shrink-0 w-4 h-4 flex items-center justify-center rounded-full text-sm font-mono transition-colors duration-150 cursor-pointer ${
@@ -239,7 +239,7 @@ export function ChallengeView({
         >
           <RotateCcw size={16} />
         </button>
-        <span className="absolute right-0 text-[11px] font-mono text-mv-text-faint">
+        <span className="hidden sm:inline absolute right-0 text-[11px] font-mono text-mv-text-faint">
           tips: <span className="text-mv-text-muted">:q</span> skip
         </span>
       </div>

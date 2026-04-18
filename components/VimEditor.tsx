@@ -178,8 +178,8 @@ export const VimEditor = forwardRef<VimEditorHandle, VimEditorProps>(
     };
 
     return (
-      <div className="relative w-full rounded-lg overflow-hidden border border-mv-border bg-mv-surface font-mono text-lg focus-within:border-mv-accent transition-colors duration-200 h-[300px]">
-        <div ref={containerRef} className="h-full p-4" />
+      <div className="relative w-full rounded-lg overflow-hidden border border-mv-border bg-mv-surface font-mono text-base sm:text-lg focus-within:border-mv-accent transition-colors duration-200 h-[220px] sm:h-[300px]">
+        <div ref={containerRef} className="h-full p-3 sm:p-4" />
         {/* Unfocused overlay */}
         {!focused && (
           <div
