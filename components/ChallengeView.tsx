@@ -6,6 +6,7 @@ import { RotateCcw, CircleHelp } from "lucide-react";
 import { VimEditor, type VimEditorHandle } from "./VimEditor";
 import { useChallenge, type ChallengeStatus } from "@/hooks/useChallenge";
 import { useCountdown } from "@/hooks/useCountdown";
+import { ResultsView } from "./ResultsView";
 import type { VimMode } from "@/lib/types";
 import { Tooltip } from "./Tooltip";
 
@@ -31,6 +32,7 @@ export function ChallengeView({
   const editorRef = useRef<VimEditorHandle>(null);
   const resetButtonRef = useRef<HTMLButtonElement>(null);
   const [tabPressed, setTabPressed] = useState(false);
+  const [sessionEnded, setSessionEnded] = useState(false);
   const {
     current,
     status,
@@ -38,37 +40,76 @@ export function ChallengeView({
     handleKeystroke,
     streak,
     averageScore,
+    averageTimeMs,
+    attempts,
     skip,
-    timeout: onTimeout,
     reset,
+    resetSession,
+    startTimer,
     challengeKey,
   } = useChallenge(mode);
 
-  const countdown = useCountdown({
+  const handleSessionExpire = useCallback(() => {
+    setSessionEnded(true);
+  }, []);
+
+  const {
+    remaining: countdownRemaining,
+    running: countdownRunning,
+    start: startCountdown,
+    reset: resetCountdown,
+  } = useCountdown({
     duration: timerDuration,
-    onExpire: onTimeout,
+    onExpire: handleSessionExpire,
   });
 
-  // Start countdown on first keystroke when timer is enabled
-  const handleKeystrokeWithTimer = useCallback(() => {
-    handleKeystroke();
-    if (timerEnabled && !countdown.running) {
-      countdown.start();
-    }
-  }, [handleKeystroke, timerEnabled, countdown]);
+  const [prevTimerEnabled, setPrevTimerEnabled] = useState(timerEnabled);
+  const [waitingForStart, setWaitingForStart] = useState(timerEnabled);
+  if (prevTimerEnabled !== timerEnabled) {
+    setPrevTimerEnabled(timerEnabled);
+    setWaitingForStart(timerEnabled);
+    setSessionEnded(false);
+  }
 
-  // Reset countdown when challenge advances or is answered correctly
   useEffect(() => {
-    countdown.reset();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [challengeKey, status]);
+    if (!timerEnabled || sessionEnded) {
+      resetCountdown();
+    }
+  }, [timerEnabled, sessionEnded, resetCountdown]);
 
-  // Tab + Enter to reset challenge
+  useEffect(() => {
+    if (status === "active" && !waitingForStart && !sessionEnded) {
+      startTimer();
+    }
+  }, [challengeKey, status, waitingForStart, sessionEnded, startTimer]);
+
+  const handleRestart = useCallback(() => {
+    resetSession();
+    setSessionEnded(false);
+    setWaitingForStart(timerEnabled);
+    resetCountdown();
+  }, [resetSession, timerEnabled, resetCountdown]);
+
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
       const target = e.target as HTMLElement;
       const isInEditor = target?.closest?.(".cm-editor");
       const isInInput = target?.tagName === "INPUT" || target?.tagName === "TEXTAREA";
+
+      if (sessionEnded) {
+        return;
+      }
+
+      if (waitingForStart && !isInInput) {
+        e.preventDefault();
+        e.stopPropagation();
+        if (e.key === " ") {
+          setWaitingForStart(false);
+          startCountdown();
+          requestAnimationFrame(() => editorRef.current?.focus());
+        }
+        return;
+      }
 
       if (e.key === "Tab") {
         e.preventDefault();
@@ -115,15 +156,26 @@ export function ChallengeView({
     return () => {
       document.removeEventListener("keydown", handleKeyDown);
     };
-  }, [tabPressed, reset, skip, onToggleHint]);
+  }, [tabPressed, reset, skip, onToggleHint, waitingForStart, startCountdown, sessionEnded]);
 
   if (!current) return null;
 
-  const remainingSeconds = Math.ceil(countdown.remaining);
+  if (sessionEnded) {
+    return (
+      <div className="flex flex-col items-center w-full max-w-3xl mx-auto">
+        <ResultsView
+          attempts={attempts}
+          duration={timerDuration}
+          onRestart={handleRestart}
+        />
+      </div>
+    );
+  }
+
+  const remainingSeconds = Math.ceil(countdownRemaining);
 
   return (
     <div className="flex flex-col items-center gap-4 sm:gap-6 w-full max-w-3xl mx-auto">
-      {/* Stats row */}
       <div className="flex items-center gap-6 sm:gap-8 font-mono text-sm">
         <Tooltip text="Consecutive correct answers in a row">
           <div className="flex items-center gap-2 text-mv-text-muted">
@@ -154,17 +206,44 @@ export function ChallengeView({
             </span>
           </div>
         </Tooltip>
-        {timerEnabled && (
+        <Tooltip text="Average time to complete a challenge">
           <div className="flex items-center gap-2 text-mv-text-muted">
-            <span className="text-mv-text-faint">time</span>
-            <span className={remainingSeconds <= 5 ? "text-mv-accent" : "text-mv-text-muted"}>
-              {remainingSeconds}s
+            <span className="text-mv-text-faint">avg time</span>
+            <span className={averageTimeMs > 0 ? "text-mv-accent" : "text-mv-text-muted"}>
+              {averageTimeMs > 0 ? `${(averageTimeMs / 1000).toFixed(1)}s` : "—"}
             </span>
           </div>
+        </Tooltip>
+        {timerEnabled && (
+          <Tooltip text="Time remaining in this session">
+            <div className="flex items-center gap-2 text-mv-text-muted">
+              <span className="text-mv-text-faint">time</span>
+              <motion.span
+                animate={
+                  countdownRunning
+                    ? { scale: [1, 1.12, 1], opacity: [0.8, 1, 0.8] }
+                    : { scale: 1, opacity: 1 }
+                }
+                transition={
+                  countdownRunning
+                    ? { duration: 1, repeat: Infinity, ease: "easeInOut" }
+                    : { duration: 0.2 }
+                }
+                className={`inline-block ${
+                  countdownRunning && remainingSeconds <= 5
+                    ? "text-mv-accent font-semibold"
+                    : countdownRunning
+                      ? "text-mv-accent"
+                      : "text-mv-text-muted"
+                }`}
+              >
+                {remainingSeconds}s
+              </motion.span>
+            </div>
+          </Tooltip>
         )}
       </div>
 
-      {/* Challenge area */}
       <AnimatePresence mode="wait">
         <motion.div
           key={challengeKey}
@@ -174,7 +253,6 @@ export function ChallengeView({
           transition={{ duration: 0.15 }}
           className="flex flex-col gap-4 w-full"
         >
-          {/* Prompt */}
           <div className="flex items-center justify-center gap-3 text-center">
             <p className="text-mv-text font-mono text-base sm:text-lg">{current.prompt}</p>
             <button
@@ -208,7 +286,6 @@ export function ChallengeView({
             )}
           </AnimatePresence>
 
-          {/* Editor */}
           <div
             className={`transition-all duration-200 rounded-lg ${statusBorderClass(status)}`}
           >
@@ -217,15 +294,15 @@ export function ChallengeView({
               initialContent={current.initialContent}
               cursorPos={current.cursorPos}
               onStateChange={validate}
-              onKeystroke={handleKeystrokeWithTimer}
+              onKeystroke={handleKeystroke}
               onSkip={skip}
               challengeKey={challengeKey}
+              waitingForStart={waitingForStart}
             />
           </div>
         </motion.div>
       </AnimatePresence>
 
-      {/* Bottom row: restart centered, tips right */}
       <div className="relative flex items-center justify-center w-full">
         <button
           ref={resetButtonRef}

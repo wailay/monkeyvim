@@ -15,6 +15,7 @@ interface VimEditorProps {
   onKeystroke?: () => void;
   onSkip?: () => void;
   challengeKey: string;
+  waitingForStart?: boolean;
 }
 
 export interface VimEditorHandle {
@@ -22,7 +23,7 @@ export interface VimEditorHandle {
 }
 
 export const VimEditor = forwardRef<VimEditorHandle, VimEditorProps>(
-  function VimEditor({ initialContent, cursorPos, onStateChange, onKeystroke, onSkip, challengeKey }, ref) {
+  function VimEditor({ initialContent, cursorPos, onStateChange, onKeystroke, onSkip, challengeKey, waitingForStart = false }, ref) {
     const containerRef = useRef<HTMLDivElement>(null);
     const viewRef = useRef<EditorView | null>(null);
     const themeCompartment = useRef(new Compartment());
@@ -37,6 +38,8 @@ export const VimEditor = forwardRef<VimEditorHandle, VimEditorProps>(
     onKeystrokeRef.current = onKeystroke;
     const onSkipRef = useRef(onSkip);
     onSkipRef.current = onSkip;
+    const waitingForStartRef = useRef(waitingForStart);
+    waitingForStartRef.current = waitingForStart;
 
     useImperativeHandle(ref, () => ({
       focus: () => {
@@ -153,7 +156,9 @@ export const VimEditor = forwardRef<VimEditorHandle, VimEditorProps>(
       view.contentDOM.addEventListener("keydown", handleKeyDown);
 
       requestAnimationFrame(() => {
-        view.focus();
+        if (!waitingForStartRef.current) {
+          view.focus();
+        }
       });
 
       return () => {
@@ -173,6 +178,16 @@ export const VimEditor = forwardRef<VimEditorHandle, VimEditorProps>(
       });
     }, [theme]);
 
+    useEffect(() => {
+      const view = viewRef.current;
+      if (!view) return;
+      if (waitingForStart) {
+        view.contentDOM.blur();
+      } else {
+        view.focus();
+      }
+    }, [waitingForStart]);
+
     const handleOverlayClick = () => {
       viewRef.current?.focus();
     };
@@ -180,16 +195,27 @@ export const VimEditor = forwardRef<VimEditorHandle, VimEditorProps>(
     return (
       <div className="relative w-full rounded-lg overflow-hidden border border-mv-border bg-mv-surface font-mono text-base sm:text-lg focus-within:border-mv-accent transition-colors duration-200 h-[220px] sm:h-[300px]">
         <div ref={containerRef} className="h-full p-3 sm:p-4" />
-        {/* Unfocused overlay */}
-        {!focused && (
-          <div
-            onClick={handleOverlayClick}
-            className="absolute inset-0 flex items-center justify-center cursor-pointer backdrop-blur-[2px] bg-mv-bg/60 transition-opacity duration-200"
-          >
-            <p className="text-mv-text-muted font-mono text-sm">
-              Click here or press any key to focus
+        {waitingForStart ? (
+          <div className="absolute inset-0 flex items-center justify-center backdrop-blur-md bg-mv-bg/70 transition-opacity duration-200">
+            <p className="text-mv-text font-mono text-sm sm:text-base">
+              Press{" "}
+              <kbd className="px-1.5 py-0.5 rounded border border-mv-border bg-mv-surface text-mv-accent font-mono text-xs sm:text-sm">
+                space
+              </kbd>{" "}
+              to start
             </p>
           </div>
+        ) : (
+          !focused && (
+            <div
+              onClick={handleOverlayClick}
+              className="absolute inset-0 flex items-center justify-center cursor-pointer backdrop-blur-[2px] bg-mv-bg/60 transition-opacity duration-200"
+            >
+              <p className="text-mv-text-muted font-mono text-sm">
+                Click here or press any key to focus
+              </p>
+            </div>
+          )
         )}
       </div>
     );
