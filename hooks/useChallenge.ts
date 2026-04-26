@@ -8,13 +8,13 @@ import { useTimer } from "./useTimer";
 export type ChallengeStatus = "active" | "correct";
 
 export function useChallenge(mode: VimMode) {
-  const [challenges] = useState(() => shuffleChallenges(getChallengesForMode(mode)));
+  const [challenges, setChallenges] = useState(() => shuffleChallenges(getChallengesForMode(mode)));
   const [currentIndex, setCurrentIndex] = useState(0);
   const [resetCount, setResetCount] = useState(0);
   const [status, setStatus] = useState<ChallengeStatus>("active");
   const [attempts, setAttempts] = useState<CommandAttempt[]>([]);
   const [streak, setStreak] = useState(0);
-  const timer = useTimer();
+  const { elapsed, start: timerStart, stop: timerStop, reset: timerReset } = useTimer();
   const hasStartedRef = useRef(false);
   const keystrokeCountRef = useRef(0);
 
@@ -27,24 +27,21 @@ export function useChallenge(mode: VimMode) {
   const startTimer = useCallback(() => {
     if (!hasStartedRef.current) {
       hasStartedRef.current = true;
-      timer.start();
+      timerStart();
     }
-  }, [timer]);
+  }, [timerStart]);
 
   const advance = useCallback(() => {
     setCurrentIndex((i) => i + 1);
     setStatus("active");
     hasStartedRef.current = false;
     keystrokeCountRef.current = 0;
-    timer.reset();
-  }, [timer]);
+    timerReset();
+  }, [timerReset]);
 
   const validate = useCallback(
     (content: string, cursorPos: number) => {
       if (!current || status !== "active") return;
-
-      // Start timer on first interaction
-      startTimer();
 
       const contentMatch = content === current.expectedContent;
       const isMotionOnly = current.initialContent === current.expectedContent;
@@ -53,7 +50,7 @@ export function useChallenge(mode: VimMode) {
       const correct = isMotionOnly ? cursorMatch : contentMatch;
 
       if (correct) {
-        const timeMs = timer.stop();
+        const timeMs = timerStop();
         const keystrokes = keystrokeCountRef.current;
         const ideal = current.expectedCommand.length;
         const score = keystrokes <= ideal ? 100 : Math.max(0, Math.round(100 * ideal / keystrokes));
@@ -75,7 +72,7 @@ export function useChallenge(mode: VimMode) {
       }
       // No incorrect auto-validation — user has unlimited time
     },
-    [current, status, timer, startTimer, advance]
+    [current, status, timerStop, advance]
   );
 
   const skip = useCallback(() => {
@@ -85,7 +82,7 @@ export function useChallenge(mode: VimMode) {
         {
           challengeId: current.id,
           correct: false,
-          timeMs: timer.stop(),
+          timeMs: timerStop(),
           timestamp: Date.now(),
           keystrokeCount: keystrokeCountRef.current,
           score: 0,
@@ -94,37 +91,34 @@ export function useChallenge(mode: VimMode) {
     }
     setStreak(0);
     advance();
-  }, [current, timer, advance]);
-
-  const timeout = useCallback(() => {
-    if (current) {
-      setAttempts((prev) => [
-        ...prev,
-        {
-          challengeId: current.id,
-          correct: false,
-          timeMs: timer.stop(),
-          timestamp: Date.now(),
-          keystrokeCount: keystrokeCountRef.current,
-          score: 0,
-        },
-      ]);
-    }
-    setStreak(0);
-    advance();
-  }, [current, timer, advance]);
+  }, [current, timerStop, advance]);
 
   const reset = useCallback(() => {
     setResetCount((c) => c + 1);
     setStatus("active");
     hasStartedRef.current = false;
     keystrokeCountRef.current = 0;
-    timer.reset();
-  }, [timer]);
+    timerReset();
+  }, [timerReset]);
+
+  const resetSession = useCallback(() => {
+    setChallenges(shuffleChallenges(getChallengesForMode(mode)));
+    setCurrentIndex(0);
+    setResetCount((c) => c + 1);
+    setStatus("active");
+    setAttempts([]);
+    setStreak(0);
+    hasStartedRef.current = false;
+    keystrokeCountRef.current = 0;
+    timerReset();
+  }, [mode, timerReset]);
 
   const correctAttemptsList = attempts.filter((a) => a.correct);
   const averageScore = correctAttemptsList.length > 0
     ? Math.round(correctAttemptsList.reduce((sum, a) => sum + a.score, 0) / correctAttemptsList.length)
+    : 0;
+  const averageTimeMs = correctAttemptsList.length > 0
+    ? correctAttemptsList.reduce((sum, a) => sum + a.timeMs, 0) / correctAttemptsList.length
     : 0;
 
   return {
@@ -134,11 +128,13 @@ export function useChallenge(mode: VimMode) {
     handleKeystroke,
     streak,
     averageScore,
-    elapsed: timer.elapsed,
+    averageTimeMs,
+    elapsed,
+    startTimer,
     attempts,
     skip,
-    timeout,
     reset,
+    resetSession,
     challengeKey: `${mode}-${currentIndex}-${resetCount}`,
   };
 }
